@@ -1,6 +1,6 @@
 # EarthScope Interactive Seismogram Widget
 
-An interactive seismogram widget for Jupyter notebooks using [Bokeh](https://github.com/bokeh/bokeh). This widget was originally built as a tool for Earthscope's [Seismology Skill Building Workshop](https://www.earthscope.org/education/skill-building-learning/courses/ssbw/).
+An interactive seismogram widget for Jupyter notebooks using [Bokeh](https://github.com/bokeh/bokeh) and [ObsPy](https://github.com/obspy/obspy). This widget was originally built as a tool for Earthscope's [Seismology Skill Building Workshop](https://www.earthscope.org/education/skill-building-learning/courses/ssbw/).
 
 For information on how to use it, please see [the tutorial notebook](./interactive-seismogram-widget/tutorial.ipynb).
 

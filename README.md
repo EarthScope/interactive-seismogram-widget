@@ -4,6 +4,8 @@ An interactive seismogram widget for Jupyter notebooks using [Bokeh](https://git
 
 For information on how to use it, please see [the tutorial notebook](./interactive-seismogram-widget/tutorial.ipynb).
 
+<img width="1035" height="875" alt="image" src="https://github.com/user-attachments/assets/5a1be640-1a90-46c6-9fda-990694f2c5bf" />
+
 ## Geolab
 To use the widget and view the tutorial in [GeoLab](https://www.earthscope.org/data/geolab/), launch GeoLab, sign up for an account or log in using your existing account, and start a GeoLab server from the Hub Control Panel. If you need more help with GeoLab, please see [the documentation](https://docs.earthscope.org/geolab/getting-started).
 

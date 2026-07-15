@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : YAK
+* LOCATION    : 00
+* CHANNEL     : BHN
+* CREATED     : 2026-07-08T18:48:18.607339Z
+* START       : 1999-07-19T02:30:00.000000Z
+* END         : 2009-02-26T00:00:00.000000Z
+* DESCRIPTION : Yakutsk, Russia
+* LATITUDE    : 62.031
+* LONGITUDE   : 129.6805
+* ELEVATION   : 96.0
+* DEPTH       : 14.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2290.0 (m/s)
+* SENSITIVITY : 960438000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 3.792366e+12
+
+
+

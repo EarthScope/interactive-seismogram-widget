@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IC
+* STATION     : LSA
+* LOCATION    : 00
+* CHANNEL     : BHE
+* CREATED     : 2026-07-08T18:48:01.382255Z
+* START       : 2004-06-25T00:00:00.000000Z
+* END         : 2010-10-19T00:00:00.000000Z
+* DESCRIPTION : Tibet, China
+* LATITUDE    : 29.70317
+* LONGITUDE   : 91.12757
+* ELEVATION   : 3645.0
+* DEPTH       : 15.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 90.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2863.0 (m/s)
+* SENSITIVITY : 1200760000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 4.741297e+12
+
+
+

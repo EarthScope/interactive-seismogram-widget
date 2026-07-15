@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : KBS
+* LOCATION    : 00
+* CHANNEL     : BHN
+* CREATED     : 2026-07-08T18:48:12.020330Z
+* START       : 1999-04-15T00:00:00.000000Z
+* END         : 2009-09-28T00:00:00.000000Z
+* DESCRIPTION : Ny-Alesund, Spitzbergen, Norway
+* LATITUDE    : 78.9154
+* LONGITUDE   : 11.9385
+* ELEVATION   : 87.0
+* DEPTH       : 3.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2250.0 (m/s)
+* SENSITIVITY : 943662000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 3.726125e+12
+
+
+

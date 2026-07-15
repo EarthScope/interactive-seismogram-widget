@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IM
+* STATION     : NV31
+* LOCATION    : 
+* CHANNEL     : BHN
+* CREATED     : 2026-07-08T18:48:08.334037Z
+* START       : 1972-01-03T00:00:00.000000Z
+* END         : 2011-06-15T00:00:00.000000Z
+* DESCRIPTION : NVAR Array Site 31, Mina, NV, USA
+* LATITUDE    : 38.4328
+* LONGITUDE   : -118.155403
+* ELEVATION   : 1509.0
+* DEPTH       : 0.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 40.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : COUNTS
+* INSTTYPE    : None
+* INSTGAIN    : 3000.0 (M/S)
+* SENSITIVITY : 15728600000.0 (M/S)
+* A0          : 310.171
+* **************************************************
+ZEROS 4
+ +0.000000e+00 +0.000000e+00
+ +9.456190e+02 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -4.442200e-02 +4.442200e-02
+ -4.442200e-02 -4.442200e-02
+ -5.057960e+02 +1.935220e+02
+ -5.057960e+02 -1.935220e+02
+CONSTANT 4.878556e+12
+
+
+

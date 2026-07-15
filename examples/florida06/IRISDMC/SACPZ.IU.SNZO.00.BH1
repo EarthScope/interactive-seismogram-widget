@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : SNZO
+* LOCATION    : 00
+* CHANNEL     : BH1
+* CREATED     : 2026-07-08T18:48:16.422695Z
+* START       : 2003-01-28T06:00:00.000000Z
+* END         : 2009-09-18T00:00:00.000000Z
+* DESCRIPTION : South Karori, New Zealand
+* LATITUDE    : -41.3087
+* LONGITUDE   : 174.7043
+* ELEVATION   : 23.0
+* DEPTH       : 96.9
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 271.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2033.6 (m/s)
+* SENSITIVITY : 852902000.0 (m/s)
+* A0          : 86988.4
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 5
+ -4.800400e-03 +0.000000e+00
+ -7.621000e-02 +0.000000e+00
+ -2.271210e+01 -2.710650e+01
+ -2.271210e+01 +2.710650e+01
+ -5.943130e+01 +0.000000e+00
+CONSTANT 7.419258e+13
+
+
+

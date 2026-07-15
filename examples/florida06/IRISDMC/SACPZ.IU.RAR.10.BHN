@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : RAR
+* LOCATION    : 10
+* CHANNEL     : BHN
+* CREATED     : 2026-07-08T18:48:15.389966Z
+* START       : 2006-01-17T01:20:00.000000Z
+* END         : 2006-12-05T23:00:00.000000Z
+* DESCRIPTION : Rarotonga, Cook Islands
+* LATITUDE    : -21.2125
+* LONGITUDE   : -159.7733
+* ELEVATION   : 28.0
+* DEPTH       : 0.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 40.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 19280.0 (m/s)
+* SENSITIVITY : 8084420000.0 (m/s)
+* A0          : 71367100.0
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 5
+ -3.701000e-02 -3.701000e-02
+ -3.701000e-02 +3.701000e-02
+ -1.979000e+02 -1.979000e+02
+ -1.979000e+02 +1.979000e+02
+ -9.111000e+02 +0.000000e+00
+CONSTANT 5.769616e+17
+
+
+

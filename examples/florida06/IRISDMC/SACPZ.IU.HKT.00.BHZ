@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : HKT
+* LOCATION    : 00
+* CHANNEL     : BHZ
+* CREATED     : 2026-07-08T18:48:10.984905Z
+* START       : 1999-04-16T19:52:00.000000Z
+* END         : 2008-09-12T00:00:00.000000Z
+* DESCRIPTION : Hockley, Texas
+* LATITUDE    : 29.9618
+* LONGITUDE   : -95.8384
+* ELEVATION   : -863.0
+* DEPTH       : 450.0
+* DIP (SEED)  : -90.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2503.37 (m/s)
+* SENSITIVITY : 1027770000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 4.058232e+12
+
+
+

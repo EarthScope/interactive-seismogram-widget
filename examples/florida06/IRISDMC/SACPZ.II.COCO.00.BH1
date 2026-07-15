@@ -1,0 +1,38 @@
+* **************************************************
+* NETWORK     : II
+* STATION     : COCO
+* LOCATION    : 00
+* CHANNEL     : BH1
+* CREATED     : 2026-07-08T18:48:03.639564Z
+* START       : 2005-10-14T00:00:00.000000Z
+* END         : 2007-07-10T02:59:59.000000Z
+* DESCRIPTION : West Island, Cocos (Keeling) Islands
+* LATITUDE    : -12.1901
+* LONGITUDE   : 96.8349
+* ELEVATION   : 1.0
+* DEPTH       : 70.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 346.9
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2306.79 (m/s)
+* SENSITIVITY : 1608780000.0 (m/s)
+* A0          : 4718.43
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 6
+ -7.639420e-04 +0.000000e+00
+ -1.213610e-02 +0.000000e+00
+ -3.350000e+00 +5.802370e+00
+ -3.350000e+00 -5.802370e+00
+ -5.399260e+00 +0.000000e+00
+ -1.891580e+01 +0.000000e+00
+CONSTANT 7.590916e+12
+
+
+

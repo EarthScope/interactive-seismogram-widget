@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : GUMO
+* LOCATION    : 10
+* CHANNEL     : BHE
+* CREATED     : 2026-07-08T18:48:10.976804Z
+* START       : 2004-11-08T03:00:00.000000Z
+* END         : 2009-07-10T00:00:00.000000Z
+* DESCRIPTION : Guam, Mariana Islands
+* LATITUDE    : 13.5893
+* LONGITUDE   : 144.8684
+* ELEVATION   : 170.0
+* DEPTH       : 0.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 90.0
+* SAMPLE RATE : 40.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 19898.0 (m/s)
+* SENSITIVITY : 8343560000.0 (m/s)
+* A0          : 71367100.0
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 5
+ -3.701000e-02 -3.701000e-02
+ -3.701000e-02 +3.701000e-02
+ -1.979000e+02 -1.979000e+02
+ -1.979000e+02 +1.979000e+02
+ -9.111000e+02 +0.000000e+00
+CONSTANT 5.954557e+17
+
+
+

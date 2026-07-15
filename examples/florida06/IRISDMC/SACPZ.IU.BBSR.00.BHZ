@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : BBSR
+* LOCATION    : 00
+* CHANNEL     : BHZ
+* CREATED     : 2026-07-08T18:48:09.406914Z
+* START       : 2002-07-10T05:00:00.000000Z
+* END         : 2008-07-31T00:00:00.000000Z
+* DESCRIPTION : Bermuda Institute of Ocean Sciences, St George's Bermuda
+* LATITUDE    : 32.371299
+* LONGITUDE   : -64.696299
+* ELEVATION   : -1.3
+* DEPTH       : 31.4
+* DIP (SEED)  : -90.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 19980.0 (m/s)
+* SENSITIVITY : 8367300000.0 (m/s)
+* A0          : 71367100.0
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 5
+ -3.701000e-02 -3.701000e-02
+ -3.701000e-02 +3.701000e-02
+ -1.979000e+02 -1.979000e+02
+ -1.979000e+02 +1.979000e+02
+ -9.111000e+02 +0.000000e+00
+CONSTANT 5.971499e+17
+
+
+

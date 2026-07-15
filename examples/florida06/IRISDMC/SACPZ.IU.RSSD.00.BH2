@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : RSSD
+* LOCATION    : 00
+* CHANNEL     : BH2
+* CREATED     : 2026-07-08T18:48:15.887213Z
+* START       : 2005-03-26T00:00:00.000000Z
+* END         : 2009-09-08T20:00:00.000000Z
+* DESCRIPTION : Black Hills, South Dakota, USA
+* LATITUDE    : 44.1212
+* LONGITUDE   : -104.0359
+* ELEVATION   : 2022.7
+* DEPTH       : 67.3
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 216.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2108.0 (m/s)
+* SENSITIVITY : 884106000.0 (m/s)
+* A0          : 86077.7
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 5
+ -4.800400e-03 +0.000000e+00
+ -7.319900e-02 +0.000000e+00
+ -2.271210e+01 -2.710650e+01
+ -2.271210e+01 +2.710650e+01
+ -5.943130e+01 +0.000000e+00
+CONSTANT 7.610181e+13
+
+
+

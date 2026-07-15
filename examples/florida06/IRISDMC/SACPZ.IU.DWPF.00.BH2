@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : DWPF
+* LOCATION    : 00
+* CHANNEL     : BH2
+* CREATED     : 2026-07-08T18:48:10.462797Z
+* START       : 1999-04-28T00:00:00.000000Z
+* END         : 2009-04-20T00:00:00.000000Z
+* DESCRIPTION : Disney Wilderness Preserve, Florida, USA
+* LATITUDE    : 28.1103
+* LONGITUDE   : -81.4327
+* ELEVATION   : -132.0
+* DEPTH       : 162.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 120.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2106.0 (m/s)
+* SENSITIVITY : 883267000.0 (m/s)
+* A0          : 86077.7
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 5
+ -4.800400e-03 +0.000000e+00
+ -7.319900e-02 +0.000000e+00
+ -2.271210e+01 -2.710650e+01
+ -2.271210e+01 +2.710650e+01
+ -5.943130e+01 +0.000000e+00
+CONSTANT 7.602959e+13
+
+
+

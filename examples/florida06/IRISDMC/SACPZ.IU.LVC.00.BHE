@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : LVC
+* LOCATION    : 00
+* CHANNEL     : BHE
+* CREATED     : 2026-07-08T18:48:13.176457Z
+* START       : 1999-12-20T00:00:00.000000Z
+* END         : 2009-04-09T06:00:00.000000Z
+* DESCRIPTION : Limon Verde, Chile
+* LATITUDE    : -22.6127
+* LONGITUDE   : -68.9111
+* ELEVATION   : 2930.0
+* DEPTH       : 30.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 90.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2304.7 (m/s)
+* SENSITIVITY : 955839000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 3.774207e+12
+
+
+

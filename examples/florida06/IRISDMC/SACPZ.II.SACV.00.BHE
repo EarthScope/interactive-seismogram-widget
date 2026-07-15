@@ -1,0 +1,38 @@
+* **************************************************
+* NETWORK     : II
+* STATION     : SACV
+* LOCATION    : 00
+* CHANNEL     : BHE
+* CREATED     : 2026-07-08T18:48:06.802399Z
+* START       : 2002-09-03T10:38:00.000000Z
+* END         : 2008-05-28T23:59:59.000000Z
+* DESCRIPTION : Santiago Island, Cape Verde
+* LATITUDE    : 14.9702
+* LONGITUDE   : -23.6085
+* ELEVATION   : 387.0
+* DEPTH       : 97.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 118.6
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2356.1 (m/s)
+* SENSITIVITY : 1632670000.0 (m/s)
+* A0          : 1852.69
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 6
+ -7.639420e-04 +0.000000e+00
+ -1.195640e-02 +0.000000e+00
+ -2.940000e+00 +2.999400e+00
+ -2.940000e+00 -2.999400e+00
+ -5.399260e+00 +0.000000e+00
+ -1.891580e+01 +0.000000e+00
+CONSTANT 3.024831e+12
+
+
+

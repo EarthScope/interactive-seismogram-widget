@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : MS
+* STATION     : BTDF
+* LOCATION    : 01
+* CHANNEL     : BHN
+* CREATED     : 2026-07-08T18:48:18.622086Z
+* START       : 2006-02-02T00:00:00.000000Z
+* END         : 2007-01-12T00:00:00.000000Z
+* DESCRIPTION : Bukit Timah Dairy Farm
+* LATITUDE    : 1.3617
+* LONGITUDE   : 103.775
+* ELEVATION   : 57.0
+* DEPTH       : 0.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2307.12 (m/s)
+* SENSITIVITY : 967675000.0 (m/s)
+* A0          : 971.742
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234120e-02 +1.234150e-02
+ -1.234120e-02 -1.234150e-02
+ -1.958780e+01 +2.456170e+01
+ -1.958780e+01 -2.456170e+01
+CONSTANT 9.403304e+11
+
+
+

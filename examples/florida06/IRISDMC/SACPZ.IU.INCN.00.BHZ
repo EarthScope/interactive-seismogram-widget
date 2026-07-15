@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : INCN
+* LOCATION    : 00
+* CHANNEL     : BHZ
+* CREATED     : 2026-07-08T18:48:11.504002Z
+* START       : 1999-02-18T00:00:00.000000Z
+* END         : 2009-07-30T00:00:00.000000Z
+* DESCRIPTION : Inchon, Republic of Korea
+* LATITUDE    : 37.4776
+* LONGITUDE   : 126.6239
+* ELEVATION   : 79.0
+* DEPTH       : 1.0
+* DIP (SEED)  : -90.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2622.0 (m/s)
+* SENSITIVITY : 1099680000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 4.342174e+12
+
+
+

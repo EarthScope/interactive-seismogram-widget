@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : HNR
+* LOCATION    : 00
+* CHANNEL     : BH2
+* CREATED     : 2026-07-08T18:48:10.988122Z
+* START       : 2004-10-29T16:00:00.000000Z
+* END         : 2009-09-28T00:00:00.000000Z
+* DESCRIPTION : Honiara, Solomon Islands
+* LATITUDE    : -9.4387
+* LONGITUDE   : 159.9475
+* ELEVATION   : 100.0
+* DEPTH       : 100.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2063.0 (m/s)
+* SENSITIVITY : 865232000.0 (m/s)
+* A0          : 86077.7
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 5
+ -4.800400e-03 +0.000000e+00
+ -7.319900e-02 +0.000000e+00
+ -2.271210e+01 -2.710650e+01
+ -2.271210e+01 +2.710650e+01
+ -5.943130e+01 +0.000000e+00
+CONSTANT 7.447718e+13
+
+
+

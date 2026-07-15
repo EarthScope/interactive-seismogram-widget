@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : ANMO
+* LOCATION    : 10
+* CHANNEL     : BH2
+* CREATED     : 2026-07-08T18:48:09.395360Z
+* START       : 2004-08-06T16:00:00.000000Z
+* END         : 2007-05-30T19:50:00.000000Z
+* DESCRIPTION : Albuquerque, New Mexico, USA
+* LATITUDE    : 34.945913
+* LONGITUDE   : -106.457122
+* ELEVATION   : 1767.2
+* DEPTH       : 48.8
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 144.0
+* SAMPLE RATE : 40.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 20000.0 (m/s)
+* SENSITIVITY : 8388510000.0 (m/s)
+* A0          : 72431300.0
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 5
+ -3.701000e-02 -3.701000e-02
+ -3.701000e-02 +3.701000e-02
+ -1.979000e+02 -1.979000e+02
+ -1.979000e+02 +1.979000e+02
+ -9.111000e+02 +0.000000e+00
+CONSTANT 6.075907e+17
+
+
+

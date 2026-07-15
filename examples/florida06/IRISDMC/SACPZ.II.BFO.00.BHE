@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : II
+* STATION     : BFO
+* LOCATION    : 00
+* CHANNEL     : BHE
+* CREATED     : 2026-07-08T18:48:03.107976Z
+* START       : 2002-08-30T07:00:00.000000Z
+* END         : 2008-01-15T23:59:59.000000Z
+* DESCRIPTION : Black Forest Observatory, Schiltach, Germany
+* LATITUDE    : 48.3301
+* LONGITUDE   : 8.3296
+* ELEVATION   : 638.0
+* DEPTH       : 160.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 90.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2539.63 (m/s)
+* SENSITIVITY : 23791500000.0 (m/s)
+* A0          : 100.06
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -6.280000e+00 +7.782130e+00
+ -6.280000e+00 -7.782130e+00
+ -2.142000e-03 +1.753000e-03
+ -2.142000e-03 -1.753000e-03
+CONSTANT 2.380577e+12
+
+
+

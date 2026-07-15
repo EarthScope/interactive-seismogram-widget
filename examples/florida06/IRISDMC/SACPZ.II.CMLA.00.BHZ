@@ -1,0 +1,38 @@
+* **************************************************
+* NETWORK     : II
+* STATION     : CMLA
+* LOCATION    : 00
+* CHANNEL     : BHZ
+* CREATED     : 2026-07-08T18:48:03.632122Z
+* START       : 2006-08-20T12:00:00.000000Z
+* END         : 2008-04-28T10:59:59.000000Z
+* DESCRIPTION : Cha de Macela, Sao Miguel Island, Azores
+* LATITUDE    : 37.7637
+* LONGITUDE   : -25.5243
+* ELEVATION   : 429.0
+* DEPTH       : 97.0
+* DIP (SEED)  : -90.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2232.19 (m/s)
+* SENSITIVITY : 2324800000.0 (m/s)
+* A0          : 2438.52
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 6
+ -7.639420e-04 +0.000000e+00
+ -1.154030e-02 +0.000000e+00
+ -3.072250e+00 +3.717880e+00
+ -3.072250e+00 -3.717880e+00
+ -5.399260e+00 +0.000000e+00
+ -1.891580e+01 +0.000000e+00
+CONSTANT 5.669071e+12
+
+
+

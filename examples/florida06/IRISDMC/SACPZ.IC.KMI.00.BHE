@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IC
+* STATION     : KMI
+* LOCATION    : 00
+* CHANNEL     : BHE
+* CREATED     : 2026-07-08T18:48:01.367743Z
+* START       : 1999-08-18T02:30:00.000000Z
+* END         : 2010-10-19T00:00:00.000000Z
+* DESCRIPTION : Kunming, Yunnan Province, China
+* LATITUDE    : 25.14825
+* LONGITUDE   : 102.74748
+* ELEVATION   : 1940.0
+* DEPTH       : 35.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 90.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2104.0 (m/s)
+* SENSITIVITY : 882429000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 3.484342e+12
+
+
+

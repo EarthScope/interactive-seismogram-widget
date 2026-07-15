@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : TUC
+* LOCATION    : 00
+* CHANNEL     : BHZ
+* CREATED     : 2026-07-08T18:48:17.963851Z
+* START       : 1998-11-05T19:00:00.000000Z
+* END         : 2009-05-28T19:35:00.000000Z
+* DESCRIPTION : Tucson, Arizona
+* LATITUDE    : 32.3098
+* LONGITUDE   : -110.7847
+* ELEVATION   : 909.0
+* DEPTH       : 1.0
+* DIP (SEED)  : -90.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2198.73 (m/s)
+* SENSITIVITY : 805666000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 3.181237e+12
+
+
+

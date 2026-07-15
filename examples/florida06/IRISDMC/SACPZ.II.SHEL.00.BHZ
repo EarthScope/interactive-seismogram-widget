@@ -1,0 +1,38 @@
+* **************************************************
+* NETWORK     : II
+* STATION     : SHEL
+* LOCATION    : 00
+* CHANNEL     : BHZ
+* CREATED     : 2026-07-08T18:48:07.270139Z
+* START       : 2002-10-05T16:00:00.000000Z
+* END         : 2010-08-21T10:49:59.000000Z
+* DESCRIPTION : Horse Pasture, St. Helena Island
+* LATITUDE    : -15.9594
+* LONGITUDE   : -5.7455
+* ELEVATION   : 537.0
+* DEPTH       : 60.0
+* DIP (SEED)  : -90.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2288.46 (m/s)
+* SENSITIVITY : 1592710000.0 (m/s)
+* A0          : 1849.73
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 6
+ -7.639420e-04 +0.000000e+00
+ -1.159860e-02 +0.000000e+00
+ -2.940000e+00 +2.999400e+00
+ -2.940000e+00 -2.999400e+00
+ -5.399260e+00 +0.000000e+00
+ -1.891580e+01 +0.000000e+00
+CONSTANT 2.946083e+12
+
+
+

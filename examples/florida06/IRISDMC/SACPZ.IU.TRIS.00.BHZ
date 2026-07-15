@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : TRIS
+* LOCATION    : 00
+* CHANNEL     : BHZ
+* CREATED     : 2026-07-08T18:48:17.445907Z
+* START       : 2004-03-03T00:00:00.000000Z
+* END         : 2009-09-18T00:00:00.000000Z
+* DESCRIPTION : Tristan da Cunha
+* LATITUDE    : -37.0681
+* LONGITUDE   : -12.3152
+* ELEVATION   : 58.0
+* DEPTH       : 2.0
+* DIP (SEED)  : -90.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2324.0 (m/s)
+* SENSITIVITY : 974698000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 3.848673e+12
+
+
+

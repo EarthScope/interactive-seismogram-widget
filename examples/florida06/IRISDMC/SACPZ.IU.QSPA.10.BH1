@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : QSPA
+* LOCATION    : 10
+* CHANNEL     : BH1
+* CREATED     : 2026-07-08T18:48:15.362566Z
+* START       : 2002-12-29T01:00:00.000000Z
+* END         : 2009-10-18T00:00:00.000000Z
+* DESCRIPTION : South Pole Remote Earth Science Observatory (Quiet Zone)
+* LATITUDE    : -89.9289
+* LONGITUDE   : 144.4382
+* ELEVATION   : 2596.0
+* DEPTH       : 254.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 315.0
+* SAMPLE RATE : 40.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 19872.0 (m/s)
+* SENSITIVITY : 8334820000.0 (m/s)
+* A0          : 72431300.0
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 5
+ -3.701000e-02 -3.701000e-02
+ -3.701000e-02 +3.701000e-02
+ -1.979000e+02 -1.979000e+02
+ -1.979000e+02 +1.979000e+02
+ -9.111000e+02 +0.000000e+00
+CONSTANT 6.037018e+17
+
+
+

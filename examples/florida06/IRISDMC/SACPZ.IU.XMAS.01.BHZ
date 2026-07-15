@@ -1,0 +1,37 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : XMAS
+* LOCATION    : 01
+* CHANNEL     : BHZ
+* CREATED     : 2026-07-08T18:48:18.604116Z
+* START       : 1999-04-29T22:55:00.000000Z
+* END         : 2007-06-13T17:00:00.000000Z
+* DESCRIPTION : Kiritimati Island, Republic of Kiribati
+* LATITUDE    : 2.0448
+* LONGITUDE   : -157.4457
+* ELEVATION   : 19.0
+* DEPTH       : 1.0
+* DIP (SEED)  : -90.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 40.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 20000.0 (m/s)
+* SENSITIVITY : 8388520000.0 (m/s)
+* A0          : 59680700.0
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 5
+ -3.564700e-02 -3.687900e-02
+ -3.564700e-02 +3.687900e-02
+ -2.513300e+02 +0.000000e+00
+ -1.310400e+02 -4.672900e+02
+ -1.310400e+02 +4.672900e+02
+CONSTANT 5.006327e+17
+
+
+

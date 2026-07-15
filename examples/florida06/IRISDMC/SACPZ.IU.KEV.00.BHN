@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : KEV
+* LOCATION    : 00
+* CHANNEL     : BHN
+* CREATED     : 2026-07-08T18:48:12.030349Z
+* START       : 1999-02-16T07:10:00.000000Z
+* END         : 2008-09-11T00:00:00.000000Z
+* DESCRIPTION : Kevo, Finland
+* LATITUDE    : 69.7565
+* LONGITUDE   : 27.0035
+* ELEVATION   : 85.0
+* DEPTH       : 15.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 354.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2204.0 (m/s)
+* SENSITIVITY : 924369000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 3.649945e+12
+
+
+

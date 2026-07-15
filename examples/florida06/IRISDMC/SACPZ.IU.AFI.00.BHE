@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : AFI
+* LOCATION    : 00
+* CHANNEL     : BHE
+* CREATED     : 2026-07-08T18:48:08.887943Z
+* START       : 1999-06-10T20:00:00.000000Z
+* END         : 2009-05-11T00:00:00.000000Z
+* DESCRIPTION : Afiamalu, Samoa
+* LATITUDE    : -13.90853
+* LONGITUDE   : -171.78265
+* ELEVATION   : 705.0
+* DEPTH       : 1.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 90.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2228.0 (m/s)
+* SENSITIVITY : 934435000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 3.689691e+12
+
+
+

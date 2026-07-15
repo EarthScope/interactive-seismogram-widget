@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : DAV
+* LOCATION    : 00
+* CHANNEL     : BHZ
+* CREATED     : 2026-07-08T18:48:10.459471Z
+* START       : 1999-05-10T04:00:00.000000Z
+* END         : 2009-06-22T00:00:00.000000Z
+* DESCRIPTION : Davao, Philippines
+* LATITUDE    : 7.0697
+* LONGITUDE   : 125.5791
+* ELEVATION   : 149.0
+* DEPTH       : 1.0
+* DIP (SEED)  : -90.0
+* AZIMUTH     : 0.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2504.0 (m/s)
+* SENSITIVITY : 1050190000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 4.146759e+12
+
+
+

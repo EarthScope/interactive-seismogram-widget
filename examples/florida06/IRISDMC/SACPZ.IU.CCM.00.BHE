@@ -1,0 +1,36 @@
+* **************************************************
+* NETWORK     : IU
+* STATION     : CCM
+* LOCATION    : 00
+* CHANNEL     : BHE
+* CREATED     : 2026-07-08T18:48:09.921543Z
+* START       : 1999-06-03T19:50:00.000000Z
+* END         : 2011-07-14T00:00:00.000000Z
+* DESCRIPTION : Cathedral Cave, Missouri, USA
+* LATITUDE    : 38.0557
+* LONGITUDE   : -91.2446
+* ELEVATION   : 171.5
+* DEPTH       : 51.0
+* DIP (SEED)  : 0.0
+* AZIMUTH     : 90.0
+* SAMPLE RATE : 20.0
+* INPUT UNIT  : M
+* OUTPUT UNIT : counts
+* INSTTYPE    : None
+* INSTGAIN    : 2058.0 (m/s)
+* SENSITIVITY : 863136000.0 (m/s)
+* A0          : 3948.58
+* **************************************************
+ZEROS 3
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+ +0.000000e+00 +0.000000e+00
+POLES 4
+ -1.234000e-02 -1.234000e-02
+ -1.234000e-02 +1.234000e-02
+ -3.918000e+01 -4.912000e+01
+ -3.918000e+01 +4.912000e+01
+CONSTANT 3.408162e+12
+
+
+

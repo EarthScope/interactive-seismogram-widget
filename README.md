@@ -15,7 +15,7 @@ curl -L https://github.com/EarthScope/interactive-seismogram-widget/archive/refs
     interactive-seismogram-widget-main/interactive-seismogram-widget
 ```
 
-While in the same directory as `interactive_seismogram_widget.py`, it can be imported in python with 
+While in the same directory as `interactive_seismogram_widget.py`, it can be imported in python: 
 ```python
 import interactive_seismogram_widget
 ```

@@ -26,8 +26,27 @@ from bokeh.models import (
 import bokeh.palettes as palettes
 from bokeh.io import output_notebook
 
+import os
+from urllib.parse import urlparse, urljoin
+
 def use_notebook():
     return output_notebook()
+
+def _bokeh_notebook_url(port): # Use the Geolab server or the hub, because security
+    external_url = os.environ.get(
+        "JUPYTER_BOKEH_EXTERNAL_URL",
+        "https://geolab.earthscope.cloud/",
+    )
+    
+    if port is None:
+        return urlparse(external_url).netloc
+
+    service_prefix = os.environ.get("JUPYTERHUB_SERVICE_PREFIX")
+    if not service_prefix:
+        return f"http://localhost:{port}"
+
+    user_url = urljoin(external_url, service_prefix)
+    return urljoin(user_url, f"proxy/{port}")
     
 def _normalize_selector(value, name):
     """Return a validated ObsPy selector or ``None``."""
@@ -1703,7 +1722,7 @@ def show(
             component=component,
         )
 
-    return _bokeh_show(app)
+    return _bokeh_show(app, notebook_url=_bokeh_notebook_url)
 
 def show_components(
     pick_state,
@@ -1743,4 +1762,4 @@ def show_components(
             component=component,
         )
 
-    return _bokeh_show(app)
+    return bokeh_show(app, notebook_url=_bokeh_notebook_url)

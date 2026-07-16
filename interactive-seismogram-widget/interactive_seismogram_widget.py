@@ -13,7 +13,6 @@ from bokeh.models import (
     Span,
     Label,
     Div,
-    RadioButtonGroup,
     Button,
     FullscreenTool,
     CrosshairTool,
@@ -24,7 +23,7 @@ from bokeh.models import (
     ColorBar,
     LinearColorMapper,
 )
-from bokeh.palettes import Viridis256
+import bokeh.palettes as palettes
 from bokeh.io import output_notebook
 
 def use_notebook():
@@ -401,8 +400,20 @@ def make_arrival_picker_app(
         line_color="black",
     )
 
+    spectrogram_palettes = {
+        name: list(palette_sizes[256])
+        for name, palette_sizes in palettes.all_palettes.items()
+        if 256 in palette_sizes
+    }
+    default_color_scheme = (
+        "Viridis"
+        if "Viridis" in spectrogram_palettes
+        else sorted(spectrogram_palettes)[0]
+    )
+    selected_color_scheme = spectrogram_palettes[default_color_scheme]
+
     spec_color_mapper = LinearColorMapper(
-        palette=Viridis256,
+        palette=selected_color_scheme,
         low=-120.0,
         high=0.0,
     )
@@ -574,6 +585,13 @@ def make_arrival_picker_app(
             ("spectrogram", "Spectrogram"),
         ],
         width=180,
+    )
+
+    color_scheme_select = Select(
+        title="Color scheme",
+        value=default_color_scheme,
+        options=sorted(spectrogram_palettes),
+        width=150,
     )
 
     analysis_fmax_input = Spinner(
@@ -1299,13 +1317,14 @@ def make_arrival_picker_app(
                 spec_color_bar.visible = True
                 hover.renderers = []
                 set_range(x_min, x_max, 0.0, fmax)
-                p.title.text = f"{trace_id(current_trace)} — spectrogram"
+                p.title.text = f"{trace_id(current_trace)}"
                 p.xaxis.axis_label = "Time (s)"
                 p.yaxis.axis_label = "Frequency (Hz)"
                 view_status.text = (
                     f"<b>View:</b> spectrogram of the displayed signal. "
                     f"Window = {float(spectrogram_window_input.value):g} s; "
-                    f"overlap = {float(spectrogram_overlap_input.value):g}%."
+                    f"overlap = {float(spectrogram_overlap_input.value):g}%; "
+                    f"color scheme = {color_scheme_select.value}."
                 )
 
             show_pick_overlays(True)
@@ -1580,9 +1599,14 @@ def make_arrival_picker_app(
             "spectrogram",
         }
 
-        # Window and overlap apply only to the spectrogram.
+        # Window, overlap, and color scheme apply only to the spectrogram.
         spectrogram_window_input.visible = view == "spectrogram"
         spectrogram_overlap_input.visible = view == "spectrogram"
+        color_scheme_select.visible = view == "spectrogram"
+
+    def on_color_scheme_change(attr, old, new):
+        spec_color_mapper.palette = spectrogram_palettes[new]
+        update_view()
 
     def on_view_control_change(attr, old, new):
         update_analysis_control_visibility()
@@ -1592,6 +1616,7 @@ def make_arrival_picker_app(
         trace_select.on_change("value", on_trace_select_change)
 
     view_select.on_change("value", on_view_control_change)
+    color_scheme_select.on_change("value", on_color_scheme_change)
     analysis_fmax_input.on_change("value", on_view_control_change)
     spectrogram_window_input.on_change("value", on_view_control_change)
     spectrogram_overlap_input.on_change("value", on_view_control_change)
@@ -1608,6 +1633,7 @@ def make_arrival_picker_app(
             trace_select,
             row(
                 view_select,
+                color_scheme_select,
                 analysis_fmax_input,
                 spectrogram_window_input,
                 spectrogram_overlap_input,

@@ -1762,4 +1762,4 @@ def show_components(
             component=component,
         )
 
-    return bokeh_show(app, notebook_url=_bokeh_notebook_url)
+    return _bokeh_show(app, notebook_url=_bokeh_notebook_url)

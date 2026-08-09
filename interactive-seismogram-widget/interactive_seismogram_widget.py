@@ -5,6 +5,10 @@ import numpy as np
 import pandas as pd
 from obspy import read, Trace, Stream
 from pathlib import Path
+import json
+import urllib.request
+import ipykernel
+from jupyter_core.paths import jupyter_runtime_dir
 from bokeh.events import Tap
 from bokeh.plotting import figure, show as _bokeh_show
 from bokeh.layouts import column, row, gridplot
@@ -24,29 +28,142 @@ from bokeh.models import (
     LinearColorMapper,
 )
 import bokeh.palettes as palettes
-from bokeh.io import output_notebook
+from bokeh.io import output_notebook, reset_output
+from bokeh.io.state import curstate
+from bokeh.server.server import Server
 
 import os
 from urllib.parse import urlparse, urljoin
+import asyncio
 
-def use_notebook():
+_notebook_config = {"local_origin": None}
+
+def _detect_local_notebook_origin():
+    try:
+
+        kernel_id = Path(ipykernel.get_connection_file()).stem.split("-", 1)[1]
+
+        runtime_dir = Path(jupyter_runtime_dir())
+        server_files = list(runtime_dir.glob("nbserver-*.json")) + list(
+            runtime_dir.glob("jpserver-*.json")
+        )
+
+        for server_file in server_files:
+            try:
+                info = json.loads(server_file.read_text())
+            except (OSError, ValueError):
+                continue
+
+            hostname = info.get("hostname") or "localhost"
+            if hostname == "0.0.0.0":  # never a valid browser origin
+                hostname = "localhost"
+
+            base_url = info.get("base_url", "/")
+            token = info.get("token", "")
+            origin = f"{hostname}:{info['port']}"
+            sessions_url = f"http://{origin}{base_url}api/sessions?token={token}"
+
+            try:
+                with urllib.request.urlopen(sessions_url, timeout=1) as resp:
+                    sessions = json.loads(resp.read())
+            except Exception:
+                continue
+
+            for session in sessions:
+                if session.get("kernel", {}).get("id") == kernel_id:
+                    return origin
+
+    except Exception:
+        pass
+
+    return None
+
+def use_notebook(local_url=None):
+    on_hub = bool(os.environ.get("JUPYTERHUB_SERVICE_PREFIX"))
+
+    if not on_hub:
+        if local_url is None:
+            local_url = _detect_local_notebook_origin()
+            if local_url is None:
+                raise RuntimeError(
+                    "Couldn't auto-detect the notebook's address. This can "
+                    "happen with password-protected Jupyter servers (detection "
+                    "needs a token) or non-standard Jupyter frontends. Call "
+                    "use_notebook(local_url=\"host:port\") with wherever "
+                    "you're actually viewing this notebook from, e.g. "
+                    "use_notebook(local_url=\"localhost:8888\")."
+                )
+            print(f"Detected notebook at {local_url}")
+        elif local_url.startswith("http"):
+            local_url = local_url.split("//", 1)[1]
+
+        _notebook_config["local_origin"] = local_url
+
     return output_notebook()
 
-def _bokeh_notebook_url(port): # Use the Geolab server or the hub, because security
-    external_url = os.environ.get(
-        "JUPYTER_BOKEH_EXTERNAL_URL",
-        "https://geolab.earthscope.cloud/",
-    )
-    
-    if port is None:
-        return urlparse(external_url).netloc
+def use_standalone():
+    return reset_output()
 
+def _bokeh_notebook_url(port):
     service_prefix = os.environ.get("JUPYTERHUB_SERVICE_PREFIX")
-    if not service_prefix:
-        return f"http://localhost:{port}"
 
-    user_url = urljoin(external_url, service_prefix)
-    return urljoin(user_url, f"proxy/{port}")
+    if service_prefix:
+        hub_public_url = os.environ.get("JUPYTERHUB_PUBLIC_URL")
+        if hub_public_url:
+            user_url = hub_public_url
+        else:
+            external_url = os.environ.get("JUPYTER_BOKEH_EXTERNAL_URL")
+            if not external_url:
+                raise RuntimeError(
+                    "Running under a JupyterHub, but couldn't determine its "
+                    "public URL (JUPYTERHUB_PUBLIC_URL isn't set). Either "
+                    "have the Hub admin set JupyterHub.public_url, which "
+                    "publishes it automatically to every user, or set the "
+                    "JUPYTER_BOKEH_EXTERNAL_URL environment variable "
+                    "yourself to this Hub's externally-visible address -- "
+                    "e.g. \"https://geolab.earthscope.cloud/\" if this is "
+                    "the Geolab Hub."
+                )
+            user_url = urljoin(external_url, service_prefix)
+
+        if port is None:
+            return urlparse(user_url).netloc
+        return urljoin(user_url, f"proxy/{port}")
+
+    if port is None:
+        if _notebook_config["local_origin"] is None:
+            raise RuntimeError(
+                "No local notebook address is configured. Call "
+                "use_notebook() before show()/show_components()."
+            )
+        return _notebook_config["local_origin"]
+    
+    local_hostname = _notebook_config["local_origin"].split(":")[0]
+    return f"http://{local_hostname}:{port}"
+
+
+def _display_bokeh_app(app):
+    if curstate().notebook_type is not None:
+        return _bokeh_show(app, notebook_url=_bokeh_notebook_url)
+
+    server = Server({"/": app}, port=0)
+    server.io_loop.add_callback(server.show, "/")
+    try:
+        asyncio.get_running_loop()
+        loop_already_running = True
+    except RuntimeError:
+        loop_already_running = False
+
+    if loop_already_running:
+        server.start()
+        print(
+            f"Serving the picker at http://localhost:{server.port}/ "
+            f"(running in the background of this kernel)"
+        )
+        return
+
+    print(f"Serving the picker at http://localhost:{server.port}/ (Ctrl+C to stop)")
+    server.run_until_shutdown()
     
 def _normalize_selector(value, name):
     """Return a validated ObsPy selector or ``None``."""
@@ -63,7 +180,6 @@ def _normalize_selector(value, name):
 
 
 def _available_codes(stream, field):
-    """Return sorted, non-empty trace metadata values from a Stream."""
     return sorted(
         {
             str(getattr(trace.stats, field, "") or "").strip()
@@ -74,7 +190,6 @@ def _available_codes(stream, field):
 
 
 def _available_components(stream):
-    """Return sorted final channel letters present in a Stream."""
     return sorted(
         {
             channel[-1]
@@ -1722,7 +1837,7 @@ def show(
             component=component,
         )
 
-    return _bokeh_show(app, notebook_url=_bokeh_notebook_url)
+    return _display_bokeh_app(app)
 
 def show_components(
     pick_state,
@@ -1762,4 +1877,4 @@ def show_components(
             component=component,
         )
 
-    return _bokeh_show(app, notebook_url=_bokeh_notebook_url)
+    return _display_bokeh_app(app)

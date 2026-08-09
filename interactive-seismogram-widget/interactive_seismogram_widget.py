@@ -93,7 +93,6 @@ def use_notebook(local_url=None):
                     "you're actually viewing this notebook from, e.g. "
                     "use_notebook(local_url=\"localhost:8888\")."
                 )
-            print(f"Detected notebook at {local_url}")
         elif local_url.startswith("http"):
             local_url = local_url.split("//", 1)[1]
 
@@ -636,6 +635,9 @@ def make_arrival_picker_app(
         text="P",
         text_color="red",
         visible=False,
+        text_baseline="top", 
+        y_offset=-50,
+        text_font_size = "32px",
     )
 
     s_label = Label(
@@ -644,6 +646,9 @@ def make_arrival_picker_app(
         text="S",
         text_color="blue",
         visible=False,
+        text_baseline="top", 
+        y_offset=-50,
+        text_font_size = "32px",
     )
 
     status_label = Label(
@@ -1208,7 +1213,7 @@ def make_arrival_picker_app(
 
             fig = figure(
                 width=1000,
-                height=height,
+                frame_height=height,
                 title=trace_id(trace),
                 x_axis_label="Time (s)" if index == len(stream_traces) - 1 else "",
                 y_axis_label=str(getattr(trace.stats, "channel", "") or "Amplitude"),
@@ -1289,6 +1294,9 @@ def make_arrival_picker_app(
                 text="P",
                 text_color="red",
                 visible=False,
+                text_baseline="top", 
+                y_offset=-10,
+                text_font_size = "24px",
             )
             component_s_label = Label(
                 x=float(x_values[0]),
@@ -1296,6 +1304,9 @@ def make_arrival_picker_app(
                 text="S",
                 text_color="blue",
                 visible=False,
+                text_baseline="top", 
+                y_offset=-10,
+                text_font_size = "24px",
             )
             fig.add_layout(component_p_label)
             fig.add_layout(component_s_label)

@@ -36,7 +36,77 @@ import os
 from urllib.parse import urlparse, urljoin
 import asyncio
 
-_notebook_config = {"local_origin": None}
+_notebook_config = {
+    "local_origin": None,
+    "hub_browser_widget": None,
+    "hub_detection_attempted": False,
+}
+
+def _start_hub_browser_detection():
+    """Ask the browser directly for its own address, without waiting.
+
+    Nothing server-side reveals a Hub's externally-visible hostname
+    unless the admin has configured JupyterHub.public_url. This asks
+    the one thing that unambiguously knows it instead: the browser
+    itself, via window.location.origin. A hidden ipywidgets Text box is
+    the channel back into the kernel -- the JS sets its real .value and
+    dispatches a change event, which ipywidgets syncs to Python over its
+    own comm channel (unlike writing to .innerText directly, which never
+    reaches Python at all).
+
+    This does not wait for the value to arrive. Making it arrive within
+    this same call would mean re-entering the kernel's already-running
+    event loop while blocked, which nothing in the standard library
+    provides a way to do safely. Instead, this relies on the ordinary
+    gap between notebook cells: called from use_notebook(), the value
+    has the entire time between that cell finishing and whatever later
+    cell calls show()/show_components() to arrive normally, with the
+    kernel simply idle and free to process it like any other message --
+    no special waiting required. _hub_browser_origin() below just checks
+    whatever's arrived by the time it's actually needed.
+
+    Only depends on ipywidgets (already used elsewhere in this
+    workflow) and the standard library.
+    """
+    if _notebook_config["hub_detection_attempted"]:
+        return
+    _notebook_config["hub_detection_attempted"] = True
+
+    try:
+        import ipywidgets as widgets
+        from IPython.display import display, HTML
+    except Exception:
+        return
+
+    try:
+        bridge = widgets.Text()
+        bridge.layout.display = "none"
+        _notebook_config["hub_browser_widget"] = bridge
+
+        js = HTML("""
+        <script>
+        (function() {
+            setTimeout(() => {
+                const boxes = document.querySelectorAll('.widget-text input');
+                const input = boxes[boxes.length - 1];
+                if (input) {
+                    input.value = window.location.origin;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }, 200);
+        })();
+        </script>
+        """)
+        display(bridge, js)
+    except Exception:
+        pass
+
+def _hub_browser_origin():
+    """Return the browser-reported origin if it has arrived by now, else None."""
+    bridge = _notebook_config.get("hub_browser_widget")
+    if bridge is not None and bridge.value:
+        return bridge.value
+    return None
 
 def _detect_local_notebook_origin():
     try:
@@ -98,6 +168,9 @@ def use_notebook(local_url=None):
 
         _notebook_config["local_origin"] = local_url
 
+    elif not os.environ.get("JUPYTERHUB_PUBLIC_URL"):
+        _start_hub_browser_detection()
+
     return output_notebook()
 
 def use_standalone():
@@ -108,22 +181,26 @@ def _bokeh_notebook_url(port):
 
     if service_prefix:
         hub_public_url = os.environ.get("JUPYTERHUB_PUBLIC_URL")
+        browser_origin = _hub_browser_origin()
+        external_url = os.environ.get("JUPYTER_BOKEH_EXTERNAL_URL")
+
         if hub_public_url:
             user_url = hub_public_url
-        else:
-            external_url = os.environ.get("JUPYTER_BOKEH_EXTERNAL_URL")
-            if not external_url:
-                raise RuntimeError(
-                    "Running under a JupyterHub, but couldn't determine its "
-                    "public URL (JUPYTERHUB_PUBLIC_URL isn't set). Either "
-                    "have the Hub admin set JupyterHub.public_url, which "
-                    "publishes it automatically to every user, or set the "
-                    "JUPYTER_BOKEH_EXTERNAL_URL environment variable "
-                    "yourself to this Hub's externally-visible address -- "
-                    "e.g. \"https://geolab.earthscope.cloud/\" if this is "
-                    "the Geolab Hub."
-                )
+        elif browser_origin:
+            user_url = urljoin(browser_origin.rstrip("/") + "/", service_prefix)
+        elif external_url:
             user_url = urljoin(external_url, service_prefix)
+        else:
+            raise RuntimeError(
+                "Running under a JupyterHub, but couldn't determine its "
+                "public URL: JUPYTERHUB_PUBLIC_URL isn't set, browser "
+                "detection (started in use_notebook()) hasn't resolved "
+                "yet, and JUPYTER_BOKEH_EXTERNAL_URL isn't set either. "
+                "Set JUPYTER_BOKEH_EXTERNAL_URL to this Hub's "
+                "externally-visible address yourself, or have the Hub "
+                "admin set JupyterHub.public_url so every user gets it "
+                "automatically."
+            )
 
         if port is None:
             return urlparse(user_url).netloc

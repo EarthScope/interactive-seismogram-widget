@@ -5,10 +5,6 @@ import numpy as np
 import pandas as pd
 from obspy import read, Trace, Stream
 from pathlib import Path
-import json
-import urllib.request
-import ipykernel
-from jupyter_core.paths import jupyter_runtime_dir
 from bokeh.events import Tap
 from bokeh.plotting import figure, show as _bokeh_show
 from bokeh.layouts import column, row, gridplot
@@ -29,218 +25,125 @@ from bokeh.models import (
 )
 import bokeh.palettes as palettes
 from bokeh.io import output_notebook, reset_output
+from urllib.parse import urlparse
+from bokeh.io.notebook import HTML_MIME_TYPE, JS_MIME_TYPE, EXEC_MIME_TYPE
+from bokeh.embed import server_document
+from IPython.display import publish_display_data
+from tornado.ioloop import IOLoop
+from uuid import uuid4
+import re
 from bokeh.io.state import curstate
 from bokeh.server.server import Server
 
 import os
-from urllib.parse import urlparse, urljoin
 import asyncio
 
-_notebook_config = {
-    "local_origin": None,
-    "hub_browser_widget": None,
-    "hub_detection_attempted": False,
-}
+def _bokeh_notebook_url(port):
+    """Tell Bokeh where the browser should reach the plot server."""
+    
+    service_prefix = os.environ.get("JUPYTERHUB_SERVICE_PREFIX")
 
-def _start_hub_browser_detection():
-    """Ask the browser directly for its own address, without waiting.
+    if service_prefix:
+        return f"{service_prefix.rstrip('/')}/proxy/{port}"
 
-    Nothing server-side reveals a Hub's externally-visible hostname
-    unless the admin has configured JupyterHub.public_url. This asks
-    the one thing that unambiguously knows it instead: the browser
-    itself, via window.location.origin. A hidden ipywidgets Text box is
-    the channel back into the kernel -- the JS sets its real .value and
-    dispatches a change event, which ipywidgets syncs to Python over its
-    own comm channel (unlike writing to .innerText directly, which never
-    reaches Python at all).
+    return f"http://localhost:{port}"
 
-    This does not wait for the value to arrive. Making it arrive within
-    this same call would mean re-entering the kernel's already-running
-    event loop while blocked, which nothing in the standard library
-    provides a way to do safely. Instead, this relies on the ordinary
-    gap between notebook cells: called from use_notebook(), the value
-    has the entire time between that cell finishing and whatever later
-    cell calls show()/show_components() to arrive normally, with the
-    kernel simply idle and free to process it like any other message --
-    no special waiting required. _hub_browser_origin() below just checks
-    whatever's arrived by the time it's actually needed.
-
-    Only depends on ipywidgets (already used elsewhere in this
-    workflow) and the standard library.
-    """
-    if _notebook_config["hub_detection_attempted"]:
-        return
-    _notebook_config["hub_detection_attempted"] = True
-
-    try:
-        import ipywidgets as widgets
-        from IPython.display import display, HTML
-    except Exception:
-        return
-
-    try:
-        bridge = widgets.Text()
-        bridge.layout.display = "none"
-        _notebook_config["hub_browser_widget"] = bridge
-
-        js = HTML("""
-        <script>
-        (function() {
-            setTimeout(() => {
-                const boxes = document.querySelectorAll('.widget-text input');
-                const input = boxes[boxes.length - 1];
-                if (input) {
-                    input.value = window.location.origin;
-                    input.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            }, 200);
-        })();
-        </script>
-        """)
-        display(bridge, js)
-    except Exception:
-        pass
-
-def _hub_browser_origin():
-    """Return the browser-reported origin if it has arrived by now, else None."""
-    bridge = _notebook_config.get("hub_browser_widget")
-    if bridge is not None and bridge.value:
-        return bridge.value
-    return None
-
-def _detect_local_notebook_origin():
-    try:
-
-        kernel_id = Path(ipykernel.get_connection_file()).stem.split("-", 1)[1]
-
-        runtime_dir = Path(jupyter_runtime_dir())
-        server_files = list(runtime_dir.glob("nbserver-*.json")) + list(
-            runtime_dir.glob("jpserver-*.json")
-        )
-
-        for server_file in server_files:
-            try:
-                info = json.loads(server_file.read_text())
-            except (OSError, ValueError):
-                continue
-
-            hostname = info.get("hostname") or "localhost"
-            if hostname == "0.0.0.0":  # never a valid browser origin
-                hostname = "localhost"
-
-            base_url = info.get("base_url", "/")
-            token = info.get("token", "")
-            origin = f"{hostname}:{info['port']}"
-            sessions_url = f"http://{origin}{base_url}api/sessions?token={token}"
-
-            try:
-                with urllib.request.urlopen(sessions_url, timeout=1) as resp:
-                    sessions = json.loads(resp.read())
-            except Exception:
-                continue
-
-            for session in sessions:
-                if session.get("kernel", {}).get("id") == kernel_id:
-                    return origin
-
-    except Exception:
-        pass
-
-    return None
 
 def use_notebook(local_url=None):
-    on_hub = bool(os.environ.get("JUPYTERHUB_SERVICE_PREFIX"))
-
-    if not on_hub:
-        if local_url is None:
-            local_url = _detect_local_notebook_origin()
-            if local_url is None:
-                raise RuntimeError(
-                    "Couldn't auto-detect the notebook's address. This can "
-                    "happen with password-protected Jupyter servers (detection "
-                    "needs a token) or non-standard Jupyter frontends. Call "
-                    "use_notebook(local_url=\"host:port\") with wherever "
-                    "you're actually viewing this notebook from, e.g. "
-                    "use_notebook(local_url=\"localhost:8888\")."
-                )
-        elif local_url.startswith("http"):
-            local_url = local_url.split("//", 1)[1]
-
-        _notebook_config["local_origin"] = local_url
-
-    elif not os.environ.get("JUPYTERHUB_PUBLIC_URL"):
-        _start_hub_browser_detection()
-
+    """Prepare the notebook for plotting."""
     return output_notebook()
+
 
 def use_standalone():
     return reset_output()
 
-def _bokeh_notebook_url(port):
-    service_prefix = os.environ.get("JUPYTERHUB_SERVICE_PREFIX")
 
-    if service_prefix:
-        hub_public_url = os.environ.get("JUPYTERHUB_PUBLIC_URL")
-        browser_origin = _hub_browser_origin()
-        external_url = os.environ.get("JUPYTER_BOKEH_EXTERNAL_URL")
+def _record_requesting_origin(handler):
+    """Allow websockets from whichever page fetched the loader. """
+    try:
+        origins = handler.application.websocket_origins
+    except AttributeError:
+        return
 
-        if hub_public_url:
-            user_url = hub_public_url
-        elif browser_origin:
-            user_url = urljoin(browser_origin.rstrip("/") + "/", service_prefix)
-        elif external_url:
-            user_url = urljoin(external_url, service_prefix)
-        else:
-            raise RuntimeError(
-                "Running under a JupyterHub, but couldn't determine its "
-                "public URL: JUPYTERHUB_PUBLIC_URL isn't set, browser "
-                "detection (started in use_notebook()) hasn't resolved "
-                "yet, and JUPYTER_BOKEH_EXTERNAL_URL isn't set either. "
-                "Set JUPYTER_BOKEH_EXTERNAL_URL to this Hub's "
-                "externally-visible address yourself, or have the Hub "
-                "admin set JupyterHub.public_url so every user gets it "
-                "automatically."
-            )
+    for header in ("Origin", "Referer"):
+        value = handler.request.headers.get(header)
 
-        if port is None:
-            return urlparse(user_url).netloc
-        return urljoin(user_url, f"proxy/{port}")
+        if not value:
+            continue
 
-    if port is None:
-        if _notebook_config["local_origin"] is None:
-            raise RuntimeError(
-                "No local notebook address is configured. Call "
-                "use_notebook() before show()/show_components()."
-            )
-        return _notebook_config["local_origin"]
-    
-    local_hostname = _notebook_config["local_origin"].split(":")[0]
-    return f"http://{local_hostname}:{port}"
+        host = urlparse(value).netloc.lower()
+
+        if host:
+            origins.add(host)
+            return
 
 
 def _display_bokeh_app(app):
-    if curstate().notebook_type is not None:
-        return _bokeh_show(app, notebook_url=_bokeh_notebook_url)
+    """Show a Bokeh server application in the notebook. """
+    if curstate().notebook_type is None:
+        server = Server({"/": app}, port=0)
+        server.io_loop.add_callback(server.show, "/")
 
-    server = Server({"/": app}, port=0)
-    server.io_loop.add_callback(server.show, "/")
-    try:
-        asyncio.get_running_loop()
-        loop_already_running = True
-    except RuntimeError:
-        loop_already_running = False
+        try:
+            asyncio.get_running_loop()
+            loop_already_running = True
+        except RuntimeError:
+            loop_already_running = False
 
-    if loop_already_running:
-        server.start()
-        print(
-            f"Serving the picker at http://localhost:{server.port}/ "
-            f"(running in the background of this kernel)"
-        )
+        if loop_already_running:
+            server.start()
+            print(
+                f"Serving the picker at http://localhost:{server.port}/ "
+                f"(running in the background of this kernel)"
+            )
+            return
+
+        print(f"Serving the picker at http://localhost:{server.port}/ (Ctrl+C to stop)")
+        server.run_until_shutdown()
         return
 
-    print(f"Serving the picker at http://localhost:{server.port}/ (Ctrl+C to stop)")
-    server.run_until_shutdown()
-    
+    loop = IOLoop.current()
+    server = Server(
+        {"/": app},
+        io_loop=loop,
+        port=0,
+        log_function=_record_requesting_origin,
+    )
+
+    server_id = uuid4().hex
+    curstate().uuid_to_server[server_id] = server
+    server.start()
+
+    script_tag = server_document(_bokeh_notebook_url(server.port), resources=None)
+
+    match = re.search(r'<script id="([^"]+)">(.*)</script>', script_tag, re.DOTALL)
+    if match is None:
+        return _bokeh_show(app, notebook_url=_bokeh_notebook_url)
+
+    elementid, loader_js = match.group(1), match.group(2)
+
+    marker = "xhr.open('GET', " + chr(34)
+    start = loader_js.find(marker)
+
+    if start != -1:
+        url_start = start + len(marker)
+        url_end = loader_js.index(chr(34), url_start)
+        path, _, query = loader_js[url_start:url_end].partition("?")
+        loader_js = (
+            loader_js[:url_start]
+            + path
+            + "?"
+            + query.replace("%", "%25")
+            + loader_js[url_end:]
+        )
+
+    publish_display_data({HTML_MIME_TYPE: f'<div id="{elementid}"></div>'})
+    publish_display_data(
+        {JS_MIME_TYPE: loader_js, EXEC_MIME_TYPE: ""},
+        metadata={EXEC_MIME_TYPE: {"server_id": server_id}},
+    )
+
+
 def _normalize_selector(value, name):
     """Return a validated ObsPy selector or ``None``."""
     if value is None:
@@ -518,8 +421,19 @@ def make_arrival_picker_app(
             "show_components() requires a Stream containing at least two traces."
         )
 
-    def prepare_trace_arrays(trace):
-        x_values = np.asarray(trace.times(), dtype=float).ravel()
+    def prepare_trace_arrays(trace, reftime=None):
+        """Return (x, y) for a trace.
+
+        With ``reftime`` set, x is seconds from that common instant, so
+        traces that began at different times sit at their true offsets.
+        Without it, x is seconds from the trace's own start, which aligns
+        every trace on its own first sample.
+        """
+        if reftime is None:
+            x_values = np.asarray(trace.times(), dtype=float).ravel()
+        else:
+            x_values = np.asarray(trace.times(reftime=reftime), dtype=float).ravel()
+
         y_values = np.asarray(trace.data, dtype=float).ravel()
 
         keep = np.isfinite(x_values) & np.isfinite(y_values)
@@ -582,10 +496,20 @@ def make_arrival_picker_app(
         }
     )
 
-    pick_state["P"] = None
-    pick_state["S"] = None
-    pick_state["active"] = "P"
-    pick_state["processing"] = "raw"
+    # pick_state belongs to the caller and holds nothing but picks, keyed by
+    # trace id: {"IU.ANMO.00.BHZ": {"P": UTCDateTime, "S": UTCDateTime}}.
+    # Times are absolute, so a pick means the same instant however the
+    # traces happen to be plotted.
+    pick_state.clear()
+
+    # Everything the widget needs for itself is kept separately, so the
+    # caller never has to pick trace ids out from among bookkeeping keys.
+    # "active" maps a trace id to the phase its next pick will set. In
+    # shared mode every displayed trace is picked together, so the
+    # sequence is one thing and lives under the key None.
+    widget_state = {"active": {}, "processing": "raw"}
+
+    PHASES = ("P", "S")
 
     y_min = float(initial_y.min())
     y_max = float(initial_y.max())
@@ -791,6 +715,18 @@ def make_arrival_picker_app(
     # created by the same factory and share the same page state/callbacks.
     component_pagination_controls = []
 
+    time_base_select = None
+    if mode == "components":
+        time_base_select = Select(
+            title="Time base",
+            value="absolute",
+            options=[
+                ("absolute", "Absolute"),
+                ("relative", "Relative"),
+            ],
+            width=280,
+        )
+
     view_select = Select(
         title="View",
         value="waveform",
@@ -910,6 +846,11 @@ def make_arrival_picker_app(
             return "—"
         return f"{value:.6f} s"
 
+    def time_axis_label(reftime=None):
+        if reftime is None:
+            return "Time (s)"
+        return f"Time (s) from {reftime}"
+
     def set_range(x_start, x_end, y_start, y_end):
         if not np.isfinite(x_start) or not np.isfinite(x_end) or x_start == x_end:
             x_start = 0.0
@@ -948,36 +889,91 @@ def make_arrival_picker_app(
         p.visible = not use_stacked
         stacked_panel.visible = use_stacked
 
+    def absolute_time_base():
+        """True when stacked panels are drawn on a shared absolute axis."""
+        return (
+            mode == "components"
+            and time_base_select is not None
+            and time_base_select.value == "absolute"
+        )
+
+    def display_reftime():
+        """The instant x=0 refers to, or None when each trace uses its own."""
+        if not absolute_time_base():
+            return None
+        return min(one_trace.stats.starttime for one_trace in state["stream"])
+
+    def pick_for(trace, phase):
+        """Stored absolute pick time for a trace, or None."""
+        return pick_state.get(trace_id(trace), {}).get(phase)
+
+    def pick_x(trace, phase):
+        """Where a stored pick falls on the axis this trace is drawn against."""
+        picked = pick_for(trace, phase)
+        if picked is None:
+            return None
+
+        reftime = display_reftime()
+        origin = trace.stats.starttime if reftime is None else reftime
+        return float(picked - origin)
+
+    def store_pick(trace, phase, x_value):
+        """Record a pick made at ``x_value`` on this trace's axis."""
+        reftime = display_reftime()
+        origin = trace.stats.starttime if reftime is None else reftime
+        pick_state.setdefault(trace_id(trace), {})[phase] = origin + float(x_value)
+
+    def picks_are_shared():
+        """True when one tap marks the same arrival on every panel."""
+        return stacked_is_active() and not absolute_time_base()
+
+    def phase_key(trace):
+        return None if picks_are_shared() else trace_id(trace)
+
+    def next_phase(trace):
+        """Which phase the next tap on this trace will set."""
+        return widget_state["active"].setdefault(phase_key(trace), "P")
+
+    def advance_phase(trace):
+        key = phase_key(trace)
+        widget_state["active"][key] = "S" if widget_state["active"].get(key) == "P" else "P"
+
     def set_pick_marker_locations():
-        p_time = pick_state.get("P")
-        s_time = pick_state.get("S")
+        current_trace = state["trace"]
 
-        if p_time is not None:
-            p_span.location = p_time
-            p_label.x = p_time
-
-        if s_time is not None:
-            s_span.location = s_time
-            s_label.x = s_time
+        for phase, span, label in (
+            ("P", p_span, p_label),
+            ("S", s_span, s_label),
+        ):
+            x_value = pick_x(current_trace, phase)
+            if x_value is not None:
+                span.location = x_value
+                label.x = x_value
 
         for item in stacked_items["items"]:
-            if p_time is not None:
-                item["p_span"].location = p_time
-                item["p_label"].x = p_time
-            if s_time is not None:
-                item["s_span"].location = s_time
-                item["s_label"].x = s_time
+            for phase, span_key, label_key in (
+                ("P", "p_span", "p_label"),
+                ("S", "s_span", "s_label"),
+            ):
+                x_value = pick_x(item["trace"], phase)
+                if x_value is not None:
+                    item[span_key].location = x_value
+                    item[label_key].x = x_value
 
     def show_pick_overlays(show=True):
         waveform_view = show and view_select.value == "waveform"
         use_stacked = stacked_is_active()
         show_single = waveform_view and not use_stacked
         show_stacked = waveform_view and use_stacked
+        current_trace = state["trace"]
 
-        p_span.visible = show_single and pick_state.get("P") is not None
-        s_span.visible = show_single and pick_state.get("S") is not None
-        p_label.visible = show_single and pick_state.get("P") is not None
-        s_label.visible = show_single and pick_state.get("S") is not None
+        has_p = pick_for(current_trace, "P") is not None
+        has_s = pick_for(current_trace, "S") is not None
+
+        p_span.visible = show_single and has_p
+        s_span.visible = show_single and has_s
+        p_label.visible = show_single and has_p
+        s_label.visible = show_single and has_s
         status_label.visible = show_single
 
         if show_single:
@@ -990,30 +986,66 @@ def make_arrival_picker_app(
         for item in stacked_items["items"]:
             plot = item["plot"]
             ymax = plot.y_range.end
-            item["p_span"].visible = show_stacked and pick_state.get("P") is not None
-            item["s_span"].visible = show_stacked and pick_state.get("S") is not None
-            item["p_label"].visible = show_stacked and pick_state.get("P") is not None
-            item["s_label"].visible = show_stacked and pick_state.get("S") is not None
+            item_p = pick_for(item["trace"], "P") is not None
+            item_s = pick_for(item["trace"], "S") is not None
+
+            item["p_span"].visible = show_stacked and item_p
+            item["s_span"].visible = show_stacked and item_s
+            item["p_label"].visible = show_stacked and item_p
+            item["s_label"].visible = show_stacked and item_s
             item["p_label"].y = ymax
             item["s_label"].y = ymax
 
         set_pick_marker_locations()
 
     def refresh_status():
-        p_time = pick_state["P"]
-        s_time = pick_state["S"]
-        active = pick_state["active"]
-        processing = pick_state["processing"]
+        processing = widget_state["processing"]
 
-        status.text = (
-            f"<b>P:</b> {fmt(p_time)} &nbsp;&nbsp; "
-            f"<b>S:</b> {fmt(s_time)}"
-        )
+        if stacked_is_active() and stacked_items["items"]:
+            shared = picks_are_shared()
+            lines = []
+
+            for item in stacked_items["items"]:
+                one_trace = item["trace"]
+
+                if pick_for(one_trace, "P") is None and pick_for(one_trace, "S") is None:
+                    continue
+
+                line = (
+                    f"{trace_id(one_trace)} &nbsp; "
+                    f"<b>P:</b> {fmt(pick_x(one_trace, 'P'))} &nbsp; "
+                    f"<b>S:</b> {fmt(pick_x(one_trace, 'S'))}"
+                )
+
+                # With picks made per trace, each one is at its own point
+                # in the sequence, so saying which phase comes next is
+                # only meaningful alongside that trace.
+                if not shared:
+                    line += f" &nbsp; <i>next: {next_phase(one_trace)}</i>"
+
+                lines.append(line)
+
+            if shared:
+                heading = f"<b>Next pick:</b> {widget_state['active'].get(None, 'P')}"
+            else:
+                heading = "<b>Picking each trace separately</b>"
+
+            if lines:
+                status.text = heading + "<br>" + "<br>".join(lines)
+            else:
+                status.text = heading + " &nbsp;&nbsp; No picks yet."
+        else:
+            current_trace = state["trace"]
+            status.text = (
+                f"<b>Next pick:</b> {next_phase(current_trace)} &nbsp;&nbsp; "
+                f"<b>P:</b> {fmt(pick_x(current_trace, 'P'))} &nbsp;&nbsp; "
+                f"<b>S:</b> {fmt(pick_x(current_trace, 'S'))}"
+            )
 
         status_label.text = (
-            f"Next pick: {active} | "
-            f"P: {fmt(p_time)} | "
-            f"S: {fmt(s_time)} | "
+            f"Next pick: {next_phase(state['trace'])} | "
+            f"P: {fmt(pick_x(state['trace'], 'P'))} | "
+            f"S: {fmt(pick_x(state['trace'], 'S'))} | "
             f"Data: {processing}"
         )
 
@@ -1277,8 +1309,10 @@ def make_arrival_picker_app(
         x_mins = []
         x_maxs = []
 
+        reftime = display_reftime()
+
         for index, trace in enumerate(stream_traces):
-            x_values, _ = prepare_trace_arrays(trace)
+            x_values, _ = prepare_trace_arrays(trace, reftime=reftime)
             y_values = process_trace_values(trace)
 
             x_mins.append(float(np.nanmin(x_values)))
@@ -1292,7 +1326,11 @@ def make_arrival_picker_app(
                 width=1000,
                 frame_height=height,
                 title=trace_id(trace),
-                x_axis_label="Time (s)" if index == len(stream_traces) - 1 else "",
+                x_axis_label=(
+                    time_axis_label(reftime)
+                    if index == len(stream_traces) - 1
+                    else ""
+                ),
                 y_axis_label=str(getattr(trace.stats, "channel", "") or "Amplitude"),
                 x_range=shared_x_range,
                 y_range=(ymin, ymax),
@@ -1388,7 +1426,7 @@ def make_arrival_picker_app(
             fig.add_layout(component_p_label)
             fig.add_layout(component_s_label)
 
-            fig.on_event(Tap, on_tap)
+            fig.on_event(Tap, make_on_tap(trace, x_values))
 
             figures.append(fig)
             items.append(
@@ -1437,7 +1475,19 @@ def make_arrival_picker_app(
                 spec_color_bar.visible = False
                 hover.renderers = []
                 build_stacked_waveform_view()
-                view_status.text = "<b>View:</b> stacked waveform components. Click any component to pick P/S arrivals."
+
+                if absolute_time_base():
+                    view_status.text = (
+                        "<b>View:</b> stacked components on a shared absolute "
+                        "time base, so traces sit at their true offsets. "
+                        "Clicking picks on that component only."
+                    )
+                else:
+                    view_status.text = (
+                        "<b>View:</b> stacked components, each aligned on its "
+                        "own first sample. Clicking picks the same arrival on "
+                        "every component shown."
+                    )
                 return
 
             if view == "waveform":
@@ -1560,7 +1610,7 @@ def make_arrival_picker_app(
             displayed_signal["values"] = y_proc
 
             processing_label = make_processing_label()
-            pick_state["processing"] = processing_label
+            widget_state["processing"] = processing_label
 
             processing_status.text = (
                 f"<b>Processing:</b> {processing_label} &nbsp;&nbsp; "
@@ -1576,7 +1626,7 @@ def make_arrival_picker_app(
 
     def reset_processing():
         displayed_signal["values"] = state["raw_y"].copy()
-        pick_state["processing"] = "raw"
+        widget_state["processing"] = "raw"
 
         processing_status.text = (
             f"<b>Processing:</b> raw &nbsp;&nbsp; "
@@ -1588,9 +1638,8 @@ def make_arrival_picker_app(
         refresh_status()
 
     def reset_picks():
-        pick_state["P"] = None
-        pick_state["S"] = None
-        pick_state["active"] = "P"
+        pick_state.clear()
+        widget_state["active"].clear()
 
         p_span.visible = False
         s_span.visible = False
@@ -1644,10 +1693,9 @@ def make_arrival_picker_app(
             state["source_label"] = source_name
 
         displayed_signal["values"] = y_values.copy()
-        pick_state["processing"] = "raw"
+        widget_state["processing"] = "raw"
         filter_select.value = "none"
         processing_options.active = []
-        reset_picks()
         update_control_limits_for_trace()
 
         processing_status.text = (
@@ -1675,8 +1723,10 @@ def make_arrival_picker_app(
         except Exception as err:
             input_status.text = f"<b>Trace selection error:</b> {err}"
 
-    def nearest_time(clicked_x):
-        x_values = state["x"]
+    def nearest_time(clicked_x, x_values=None):
+        if x_values is None:
+            x_values = state["x"]
+
         i = np.searchsorted(x_values, clicked_x)
 
         if i <= 0:
@@ -1693,51 +1743,75 @@ def make_arrival_picker_app(
 
         return float(right)
 
-    def on_tap(event):
-        if view_select.value != "waveform":
-            return
+    def make_on_tap(tapped_trace=None, x_values=None):
+        """Tap handler for one plot. """
 
-        picked_time = nearest_time(event.x)
+        def handler(event):
+            if view_select.value != "waveform":
+                return
 
-        if pick_state["active"] == "P":
-            pick_state["P"] = picked_time
-            pick_state["active"] = "S"
+            source_trace = tapped_trace if tapped_trace is not None else state["trace"]
+            picked_x = nearest_time(event.x, x_values)
+            phase = next_phase(source_trace)
 
-        else:
-            pick_state["S"] = picked_time
-            pick_state["active"] = "P"
+            if picks_are_shared():
+                targets = [item["trace"] for item in stacked_items["items"]]
+            else:
+                targets = [source_trace]
 
-        set_pick_marker_locations()
-        refresh_status()
+            for one_trace in targets:
+                store_pick(one_trace, phase, picked_x)
+
+            advance_phase(source_trace)
+
+            set_pick_marker_locations()
+            refresh_status()
+
+        return handler
+
+    on_tap = make_on_tap()
 
     def clear_picks():
         reset_picks()
         refresh_status()
 
-    def safe_filename_part(value):
-        value = str(value).strip()
-        if not value:
-            value = "unknown"
-
-        return "".join(
-            ch if ch.isalnum() or ch in ("-", "_", ".") else "_"
-            for ch in value
-        )
-
     def export_picks():
+        """Write every pick to one file, one row per trace per phase."""
         rows = []
-        current_trace = state["trace"]
-        station = str(getattr(current_trace.stats, "station", "") or "unknown")
 
-        for phase in ("P", "S"):
-            picked_time = pick_state.get(phase)
+        by_id = {trace_id(one_trace): one_trace for one_trace in state["stream"]}
 
-            if picked_time is not None:
+        for tid in sorted(pick_state):
+            one_trace = by_id.get(tid)
+
+            for phase in PHASES:
+                picked_time = pick_state[tid].get(phase)
+
+                if picked_time is None:
+                    continue
+
+                offset = (
+                    float(picked_time - one_trace.stats.starttime)
+                    if one_trace is not None
+                    else float("nan")
+                )
+
                 rows.append(
                     {
-                        "station": station,
+                        "trace_id": tid,
+                        "station": (
+                            str(getattr(one_trace.stats, "station", "") or "unknown")
+                            if one_trace is not None
+                            else "unknown"
+                        ),
+                        "channel": (
+                            str(getattr(one_trace.stats, "channel", "") or "unknown")
+                            if one_trace is not None
+                            else "unknown"
+                        ),
                         "phase": phase,
-                        "time_s": f"{float(picked_time):.6f}",
+                        "time_utc": str(picked_time),
+                        "offset_s": f"{offset:.6f}",
                     }
                 )
 
@@ -1747,10 +1821,7 @@ def make_arrival_picker_app(
 
         out_dir = Path("picks")
         out_dir.mkdir(exist_ok=True)
-
-        station_name = safe_filename_part(station)
-        channel_name = safe_filename_part(getattr(current_trace.stats, "channel", "") or "unknown")
-        out_path = out_dir / f"{station_name}_{channel_name}_picks.txt"
+        out_path = out_dir / "picks.txt"
 
         pd.DataFrame(rows).to_csv(
             out_path,
@@ -1758,9 +1829,10 @@ def make_arrival_picker_app(
             index=False,
         )
 
+        traces_with_picks = len({row["trace_id"] for row in rows})
         export_status.text = (
-            f"<b>Exported:</b> {len(rows)} pick(s) to "
-            f"<code>{out_path}</code>"
+            f"<b>Exported:</b> {len(rows)} pick(s) across "
+            f"{traces_with_picks} trace(s) to <code>{out_path}</code>"
         )
 
     def on_range_change(attr, old, new):
@@ -1826,6 +1898,13 @@ def make_arrival_picker_app(
         spectrogram_overlap_input.visible = view == "spectrogram"
         color_scheme_select.visible = view == "spectrogram"
 
+    def on_time_base_change(attr, old, new):
+        # A pick made against one reference is meaningless against the
+        # other, so start clean rather than silently reinterpreting it.
+        reset_picks()
+        update_view()
+        refresh_status()
+
     def on_color_scheme_change(attr, old, new):
         spec_color_mapper.palette = spectrogram_palettes[new]
         update_view()
@@ -1838,6 +1917,8 @@ def make_arrival_picker_app(
         trace_select.on_change("value", on_trace_select_change)
 
     view_select.on_change("value", on_view_control_change)
+    if time_base_select is not None:
+        time_base_select.on_change("value", on_time_base_change)
     color_scheme_select.on_change("value", on_color_scheme_change)
     analysis_fmax_input.on_change("value", on_view_control_change)
     spectrogram_window_input.on_change("value", on_view_control_change)
@@ -1863,7 +1944,7 @@ def make_arrival_picker_app(
             *processing_controls,
         )
     else:
-        controls = column(*processing_controls)
+        controls = column(time_base_select, *processing_controls)
         pagination_controls_top = make_component_pagination_controls()
         pagination_controls_bottom = make_component_pagination_controls()
     pick_buttons = row(export_picks_button, clear)
@@ -1873,18 +1954,21 @@ def make_arrival_picker_app(
     refresh_status()
 
     if mode == "single":
-        doc.add_root(column(controls, p, pick_buttons, status))
+        layout = column(controls, p, pick_buttons, status)
     else:
-        doc.add_root(
-            column(
-                controls,
-                pagination_controls_top,
-                stacked_panel,
-                pagination_controls_bottom,
-                pick_buttons,
-                status,
-            )
+        layout = column(
+            controls,
+            pagination_controls_top,
+            stacked_panel,
+            pagination_controls_bottom,
+            pick_buttons,
+            status,
         )
+
+    if doc is not None:
+        doc.add_root(layout)
+
+    return layout
 
 
 def show(
@@ -1912,8 +1996,8 @@ def show(
     show(pick_state, "station.sac", channel="BHZ")
     """
     def app(doc):
-        doc.config.notify_connection_status = False # no need to see this
-        
+        doc.config.notify_connection_status = False  # no need to see this
+
         make_arrival_picker_app(
             doc,
             pick_state,
@@ -1952,8 +2036,8 @@ def show_components(
     """
     
     def app(doc):
-        doc.config.notify_connection_status = False # no need to see this
-        
+        doc.config.notify_connection_status = False  # no need to see this
+
         make_arrival_picker_app(
             doc,
             pick_state,

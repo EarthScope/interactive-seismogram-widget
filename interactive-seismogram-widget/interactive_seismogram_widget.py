@@ -3,7 +3,7 @@ warnings.filterwarnings("ignore") # no need to see these
 
 import numpy as np
 import pandas as pd
-from obspy import read, Trace, Stream
+from obspy import read, Trace, Stream, UTCDateTime
 from pathlib import Path
 from bokeh.events import Tap
 from bokeh.plotting import figure, show as _bokeh_show
@@ -20,6 +20,7 @@ from bokeh.models import (
     Select,
     Spinner,
     CheckboxGroup,
+    RadioButtonGroup,
     ColorBar,
     LinearColorMapper,
 )
@@ -498,16 +499,17 @@ def make_arrival_picker_app(
 
     # pick_state belongs to the caller and holds nothing but picks, keyed by
     # trace id: {"IU.ANMO.00.BHZ": {"P": UTCDateTime, "S": UTCDateTime}}.
-    # Times are absolute, so a pick means the same instant however the
-    # traces happen to be plotted.
-    pick_state.clear()
+    # Preserve any picks supplied by the caller so they can be displayed and
+    # edited. Times are absolute, regardless of the display time base.
 
-    # Everything the widget needs for itself is kept separately, so the
-    # caller never has to pick trace ids out from among bookkeeping keys.
-    # "active" maps a trace id to the phase its next pick will set. In
-    # shared mode every displayed trace is picked together, so the
-    # sequence is one thing and lives under the key None.
-    widget_state = {"active": {}, "processing": "raw"}
+    # Widget controls never add bookkeeping keys to the caller's picks.
+    # The selected phase applies to the next waveform tap, regardless of
+    # whether the display shows one trace or a stack of traces.
+    widget_state = {
+        "selected_phase": None,
+        "syncing_phase_control": False,
+        "processing": "raw",
+    }
 
     PHASES = ("P", "S")
 
@@ -708,6 +710,7 @@ def make_arrival_picker_app(
         )
 
     clear = Button(label="Clear picks")
+    phase_select = RadioButtonGroup(labels=["Pick P", "Pick S"], active=0)
     export_picks_button = Button(label="Export picks", button_type="success")
     apply_processing_button = Button(label="Apply processing", button_type="primary")
     reset_processing_button = Button(label="Reset raw")
@@ -905,7 +908,8 @@ def make_arrival_picker_app(
 
     def pick_for(trace, phase):
         """Stored absolute pick time for a trace, or None."""
-        return pick_state.get(trace_id(trace), {}).get(phase)
+        picked = pick_state.get(trace_id(trace), {}).get(phase)
+        return UTCDateTime(picked) if picked is not None else None
 
     def pick_x(trace, phase):
         """Where a stored pick falls on the axis this trace is drawn against."""
@@ -927,16 +931,22 @@ def make_arrival_picker_app(
         """True when one tap marks the same arrival on every panel."""
         return stacked_is_active() and not absolute_time_base()
 
-    def phase_key(trace):
-        return None if picks_are_shared() else trace_id(trace)
-
     def next_phase(trace):
-        """Which phase the next tap on this trace will set."""
-        return widget_state["active"].setdefault(phase_key(trace), "P")
+        """Which phase the next waveform tap will set."""
+        if widget_state["selected_phase"] is None:
+            traces = (
+                [item["trace"] for item in stacked_items["items"]]
+                if stacked_is_active() and stacked_items["items"] else [trace]
+            )
+            needs_s = any(
+                pick_for(item, "P") is not None and pick_for(item, "S") is None
+                for item in traces
+            )
+            widget_state["selected_phase"] = "S" if needs_s else "P"
+        return widget_state["selected_phase"]
 
     def advance_phase(trace):
-        key = phase_key(trace)
-        widget_state["active"][key] = "S" if widget_state["active"].get(key) == "P" else "P"
+        widget_state["selected_phase"] = "S" if next_phase(trace) == "P" else "P"
 
     def set_pick_marker_locations():
         current_trace = state["trace"]
@@ -1002,7 +1012,6 @@ def make_arrival_picker_app(
         processing = widget_state["processing"]
 
         if stacked_is_active() and stacked_items["items"]:
-            shared = picks_are_shared()
             lines = []
 
             for item in stacked_items["items"]:
@@ -1017,18 +1026,9 @@ def make_arrival_picker_app(
                     f"<b>S:</b> {fmt(pick_x(one_trace, 'S'))}"
                 )
 
-                # With picks made per trace, each one is at its own point
-                # in the sequence, so saying which phase comes next is
-                # only meaningful alongside that trace.
-                if not shared:
-                    line += f" &nbsp; <i>next: {next_phase(one_trace)}</i>"
-
                 lines.append(line)
 
-            if shared:
-                heading = f"<b>Next pick:</b> {widget_state['active'].get(None, 'P')}"
-            else:
-                heading = "<b>Picking each trace separately</b>"
+            heading = f"<b>Next pick:</b> {next_phase(state['trace'])}"
 
             if lines:
                 status.text = heading + "<br>" + "<br>".join(lines)
@@ -1048,6 +1048,14 @@ def make_arrival_picker_app(
             f"S: {fmt(pick_x(state['trace'], 'S'))} | "
             f"Data: {processing}"
         )
+
+        selected_index = PHASES.index(next_phase(state["trace"]))
+        if phase_select.active != selected_index:
+            widget_state["syncing_phase_control"] = True
+            try:
+                phase_select.active = selected_index
+            finally:
+                widget_state["syncing_phase_control"] = False
 
         show_pick_overlays(True)
 
@@ -1639,7 +1647,7 @@ def make_arrival_picker_app(
 
     def reset_picks():
         pick_state.clear()
-        widget_state["active"].clear()
+        widget_state["selected_phase"] = None
 
         p_span.visible = False
         s_span.visible = False
@@ -1693,6 +1701,7 @@ def make_arrival_picker_app(
             state["source_label"] = source_name
 
         displayed_signal["values"] = y_values.copy()
+        widget_state["selected_phase"] = None
         widget_state["processing"] = "raw"
         filter_select.value = "none"
         processing_options.active = []
@@ -1775,6 +1784,12 @@ def make_arrival_picker_app(
         reset_picks()
         refresh_status()
 
+    def on_phase_select_change(attr, old, new):
+        if widget_state["syncing_phase_control"]:
+            return
+        widget_state["selected_phase"] = PHASES[new]
+        refresh_status()
+
     def export_picks():
         """Write every pick to one file, one row per trace per phase."""
         rows = []
@@ -1789,6 +1804,8 @@ def make_arrival_picker_app(
 
                 if picked_time is None:
                     continue
+
+                picked_time = UTCDateTime(picked_time)
 
                 offset = (
                     float(picked_time - one_trace.stats.starttime)
@@ -1851,6 +1868,7 @@ def make_arrival_picker_app(
     p.on_event(Tap, on_tap)
 
     clear.on_click(clear_picks)
+    phase_select.on_change("active", on_phase_select_change)
     export_picks_button.on_click(export_picks)
     apply_processing_button.on_click(apply_processing)
     reset_processing_button.on_click(reset_processing)
@@ -1899,9 +1917,7 @@ def make_arrival_picker_app(
         color_scheme_select.visible = view == "spectrogram"
 
     def on_time_base_change(attr, old, new):
-        # A pick made against one reference is meaningless against the
-        # other, so start clean rather than silently reinterpreting it.
-        reset_picks()
+        widget_state["selected_phase"] = None
         update_view()
         refresh_status()
 
@@ -1947,7 +1963,7 @@ def make_arrival_picker_app(
         controls = column(time_base_select, *processing_controls)
         pagination_controls_top = make_component_pagination_controls()
         pagination_controls_bottom = make_component_pagination_controls()
-    pick_buttons = row(export_picks_button, clear)
+    pick_buttons = row(phase_select, export_picks_button, clear)
 
     update_analysis_control_visibility()
     update_view()
@@ -1984,6 +2000,12 @@ def show(
     The widget renders one trace at a time, selected by ``trace_index`` after
     optional station/channel/component filtering. If more than one trace is in 
     the stream, the user can select other traces from a drop down.
+
+    Existing picks in ``pick_state`` are displayed on load and can be edited.
+    Use trace IDs as keys and absolute ObsPy UTCDateTime values (or parseable
+    UTC date-time strings) under "P" and/or "S". Existing picks are not required,
+    but a minimum of an empty dictionary is required so that the notebook has 
+    access to the picks.
 
     Selectors accept ObsPy wildcard patterns. ``component`` matches the final
     channel letter, while ``channel`` matches the complete channel code.
@@ -2023,6 +2045,9 @@ def show_components(
     Up to 15 traces are displayed at once. Previous/Next controls page through
     larger streams. The filtered data must contain at least two traces. This
     interface does not include a single-trace or display-mode selector.
+
+    Pre-populated P and S picks keyed by trace ID are
+    displayed and preserved in ``pick_state``.
 
     Selectors accept ObsPy wildcard patterns. ``component`` matches the final
     channel letter, while ``channel`` matches the complete channel code.
